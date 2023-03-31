@@ -1,0 +1,14 @@
+/* @font-face { font-family: Terminal;
+    src: url('terminal-grotesque.ttf'); }  */
+
+    canvas { margin: 0 auto; display: block;}
+
+body {
+    background-color: blue;
+
+}
+
+h1 { font-family: Terminal; 
+    font-size: 36;
+    color: white;
+}
