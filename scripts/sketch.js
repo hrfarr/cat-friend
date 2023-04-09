@@ -258,7 +258,7 @@ function setup() {
 
 mousepresssfx.setVolume(0.55);
 nature.setVolume(0.30);
-  frameRate(45);
+  frameRate(60);
   createCanvas(800, 2250);
   background("blue");
 
@@ -426,6 +426,9 @@ image(construction, 522,317.5,210,65)
   }
   if (hungerlvl <= 0) {
     healthlvl = healthlvl - 0.125;
+  }
+  if (happylvl <= 325) {
+  healthlvl = healthlvl -0.025;
   }
   //^^^
 
