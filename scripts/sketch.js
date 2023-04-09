@@ -25,6 +25,7 @@ let shopGUI = false;
 let itemsGUI = false;
 let radioGUI = false;
 
+
 let nature;
 let mousepresssfx;
 
@@ -69,7 +70,20 @@ let vDownClickable = false;
 
 let cdVolume = 0.2;
 
+let moveUpClickable = false;
+let moveRightClickable = false;
+let moveLeftClickable = false;
+let moveDownClickable = false;
 
+let catClickable = true;
+let playButtonClickable = true;
+let shopButtonClickable = true;
+let radioButtonClickable = true;
+let mmButtonClickable = true;
+
+let deathScreen = false;
+let endScreen = false;
+let reloadButton = false;
 
 function preload() {
   //images//
@@ -86,6 +100,7 @@ function preload() {
   construction = loadImage('assets/under construction 2.png');
   gameCat = loadImage('assets/cat head for playing.png');
   grassLawn = loadImage('assets/grass lawn.png');
+  reload = loadImage('assets/reload.png');
 
   //cd covers
   cd0 = loadImage('assets/smaller cases/small cat cd cases 0.png');
@@ -243,7 +258,7 @@ function setup() {
 
 mousepresssfx.setVolume(0.55);
 nature.setVolume(0.30);
-  frameRate(40);
+  frameRate(45);
   createCanvas(800, 2250);
   background("blue");
 
@@ -425,6 +440,22 @@ image(construction, 522,317.5,210,65)
     }
     if (catDead) {
       image(catdeadimg, catlocationX-75, catlocationY+75,catlocationHeight,catlocationWidth);
+      catClickable = false;
+      mmButtonClickable = false;
+      shopButtonClickable = false;
+      playButtonClickable = false;
+      radioButtonClickable = false;
+
+      deathScreen = true;
+
+      healthlvl = 0;
+      hungerlvl = 0;
+      happylvl = 0;
+
+      shopGUI = false;
+      radioGUI = false;
+      playGUI = false;
+
   cd0mp3.stop();
   cd1mp3.stop();
   cd3mp3.stop();
@@ -649,6 +680,10 @@ image(construction, 522,317.5,210,65)
   }
 
   if (playGUI) {
+    moveUpClickable = true;
+    moveRightClickable = true;
+    moveLeftClickable = true;
+    moveDownClickable = true;
   
     // Draw the rectangle
     // fill(255);
@@ -658,14 +693,49 @@ image(construction, 522,317.5,210,65)
     fill(255);
     stroke(0);
     rect(0, 1250, 800, 40);
-    noStroke();
+    // rect (700,1150,75,75);
+    // rect (600,1150,75,75);
+
+    // Draw the cat
+
+    image(gameCat, x - diameter/2, y - diameter/2, diameter, diameter);
+           stroke(0);
+           fill('#FFFFFF00')
+           rect(x - diameter/2, y - diameter/2, diameter, diameter);
+    // textSize(30);
+
+  fill(255);
+  stroke(0);
+  rect(600,1050,200,200)
+  beginShape();
+  vertex(675, 1225);
+  vertex(725, 1225);
+  vertex(725, 1175);
+  vertex(775, 1175);
+  vertex(775, 1125);
+  vertex(725, 1125);
+  vertex(725, 1075);
+  vertex(675, 1075);
+  vertex(675, 1125);
+  vertex(625, 1125);
+  vertex(625, 1175);
+  vertex(675, 1175);
+  vertex(675, 1225);
+  endShape(CLOSE);
+
+rect(675,1075,50,50)
+
+  fill(0);
+  noStroke();
+  textAlign(CENTER,CENTER);
+  text("W", 700, 1100);
+  text("A", 650, 1150);
+  text("S", 700, 1200);
+  text("D", 750, 1150);
+  
+      textAlign(LEFT,LEFT);
     fill(0);
     text("WASD controls",12.5,1275)
-    
-    // Draw the circle
-    // fill(0);
-    // circle(x, y, diameter);
-    image(gameCat, x - diameter/2, y - diameter/2, diameter, diameter);
     
     // Move the circle based on arrow key presses
     if (keyIsDown(65) && !isMoving) {
@@ -688,7 +758,8 @@ image(construction, 522,317.5,210,65)
       happylvl = happylvl+0.75;
       isMoving = true;
     }
-    
+
+
     // Keep the circle inside the rectangle
     if (x < diameter/2) {
       x = diameter/2;
@@ -704,6 +775,10 @@ image(construction, 522,317.5,210,65)
     }
   }
    else {
+    moveUpClickable = false;
+    moveRightClickable = false;
+    moveLeftClickable = false;
+    moveDownClickable = false;
 
   }
   //fit check
@@ -711,7 +786,24 @@ image(construction, 522,317.5,210,65)
 // image(hat2,365,465,175,100);
 // image(hat3,365,450,100,75);
 // image(hat4,364,465,100,75);
-  
+
+if (endScreen) {
+  reloadButton = true;
+  nature.stop();
+  fill("blue");
+  noStroke();
+  rect(0,0,800,800);
+  fill(255);
+  textAlign(CENTER,CENTER);
+  text('why did you let them die?',400,375);
+  fill("blue");
+  stroke(255);
+  rect(350,437.5,75,75);
+  image(reload,362.5,450,50,50)
+}
+noStroke();
+fill("blue");
+rect(0, 800, 800, 50);
 }
 
 
@@ -722,7 +814,7 @@ function mousePressed() {
 
 //cat sounds
 if (mouseX >= catlocationX && mouseX <= catlocationX + catlocationWidth &&
-  mouseY >= catlocationY && mouseY <= catlocationY + catlocationHeight) {
+  mouseY >= catlocationY && mouseY <= catlocationY + catlocationHeight &&catClickable) {
  // choose a random sound from our array
  let randomMeow = meows[Math.floor(Math.random() * meows.length)];
     
@@ -735,7 +827,7 @@ if (mouseX >= catlocationX && mouseX <= catlocationX + catlocationWidth &&
 
   //play button//
   if (mouseX >= pbuttonX && mouseX <= pbuttonX + pbuttonWidth &&
-    mouseY >= pbuttonY && mouseY <= pbuttonY + pbuttonHeight) {
+    mouseY >= pbuttonY && mouseY <= pbuttonY + pbuttonHeight && playButtonClickable) {
     pbuttonColor = color(0, 255, 0); 
     playGUI = !playGUI;
     radioGUI = false;
@@ -744,7 +836,7 @@ if (mouseX >= catlocationX && mouseX <= catlocationX + catlocationWidth &&
   }
 
   //shop button//
-  if (mouseX >= sbuttonX && mouseX <= sbuttonX + sbuttonWidth && mouseY >= sbuttonY && mouseY <= sbuttonY + sbuttonHeight) {
+  if (mouseX >= sbuttonX && mouseX <= sbuttonX + sbuttonWidth && mouseY >= sbuttonY && mouseY <= sbuttonY + sbuttonHeight && shopButtonClickable) {
     sbuttonColor = 'yellow';
     shopGUI = !shopGUI;
     radioGUI = false;
@@ -1526,18 +1618,50 @@ if (mouseX > 60 && mouseX < 190 && mouseY > 1910 && mouseY < 2050 && monies >= 1
   }
 
   //monie clicker button//
-  if (mouseX >= mMx && mouseX <= mMx + monieMakerSize && mouseY >= mMy && mouseY <= mMy + monieMakerSize) {
+  if (mouseX >= mMx && mouseX <= mMx + monieMakerSize && mouseY >= mMy && mouseY <= mMy + monieMakerSize && mmButtonClickable) {
     monies++;
     mMColor = color(0, 255, 0);
   }
 
   //radio button//
-  if (mouseX >= 600 && mouseX <= 600 + 100 && mouseY >= 575 && mouseY <= 575 + 100) {
+  if (mouseX >= 600 && mouseX <= 600 + 100 && mouseY >= 575 && mouseY <= 575 + 100 && radioButtonClickable) {
     radioGUI = !radioGUI;
     shopGUI = false;
     playGUI = false;
 
   }
+  //675,1075,50,50
+
+    //play
+     // Move the cat based on mouse presses
+    if (mouseX > 675 && mouseX < 725 && mouseY > 1075 && mouseY < 1125 && moveUpClickable) {
+      y -= 40;
+      happylvl = happylvl+0.75;
+      isMoving = true;
+    }
+    if (mouseX > 625 && mouseX < 675 && mouseY > 1125 && mouseY < 1175 && moveLeftClickable) {
+      x -= 40;
+      happylvl = happylvl+0.75;
+      isMoving = true;
+    }
+    // if (keyIsDown(87) && !isMoving) {
+    //   y -= 40;
+    //   happylvl = happylvl+0.75;
+    //   isMoving = true;
+    // }
+    // if (keyIsDown(83) && !isMoving) {
+    //   y += 40;
+    //   happylvl = happylvl+0.75;
+    //   isMoving = true;
+    // }
+    if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height && deathScreen) {
+    endScreen = true;
+    }
+    // 350,437.5,75,75
+    if (mouseX >= 350 && mouseX <= 425 && mouseY >= 437.5 && mouseY <= 512.5 && reloadButton) {
+    location.reload();
+    }
+
 }
 
 // button( my_button );
@@ -1546,6 +1670,10 @@ function mouseReleased() {
   pbuttonColor = 255; // Change button color back to white
   sbuttonColor = 255;
   ibuttonColor = 255;// Change button color back to white
+  // if (deathScreen) {
+  //   fill(0);
+  //   rect(0,0,800,800);
+  // }
 }
 function keyReleased() {
   isMoving = false;
