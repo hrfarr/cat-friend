@@ -75,7 +75,17 @@ let moveRightClickable = false;
 let moveLeftClickable = false;
 let moveDownClickable = false;
 
+let collectibleX;
+let collectibleY;
+let collectibleSize = 40;
+
 let catClickable = true;
+let catCooldown = false;
+
+let blink;
+let lastBlinkTime = 0;
+let blinkDuration = 4750;
+
 let playButtonClickable = true;
 let shopButtonClickable = true;
 let radioButtonClickable = true;
@@ -101,6 +111,8 @@ function preload() {
   gameCat = loadImage('assets/cat head for playing.png');
   grassLawn = loadImage('assets/grass lawn.png');
   reload = loadImage('assets/reload.png');
+  yarn = loadImage('assets/yarnball.png');
+  blink = loadImage('assets/cat ascii (blinked).png');
 
   //cd covers
   cd0 = loadImage('assets/smaller cases/small cat cd cases 0.png');
@@ -143,18 +155,32 @@ function preload() {
   // stopSound = loadImage ('assets/control_pause.png');
 
   //speech bubbles
-  speechBubbles.push(loadImage('assets/speech bubbles/meow.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/bark.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/boing!.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/am i a real cat_.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/i want to leave the digital world.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/i’m glad we’re friends.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/i’m having a lot of fun!.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/i’m so hungry i could eat a dog.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/im hungry.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/sometimes i think too much.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/we’re bestfriends. right_.png'));
-  speechBubbles.push(loadImage('assets/speech bubbles/yr the best!.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_01.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_02.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_03.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_04.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_05.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_06.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_07.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_08.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_09.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_10.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_11.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_12.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_13.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_14.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_15.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_16.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_17.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_18.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_19.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_20.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_21.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_22.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_23.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_24.png'));
+  speechBubbles.push(loadImage('assets/speech bubbles/Speech_Bubble_25.png'));
 
   //font(s)//
   customFont = loadFont("FT88-Expanded.ttf");
@@ -249,7 +275,6 @@ let bgAudio = true;
 
 
 
-
 function setup() {
   if (bgAudio = true) {
     nature.loop();
@@ -258,19 +283,21 @@ function setup() {
 
 mousepresssfx.setVolume(0.55);
 nature.setVolume(0.30);
-  frameRate(60);
+  frameRate(50);
   createCanvas(800, 2250);
   background("blue");
 
   // input = createInput("name your cat");
   // input.position(20,20);
   // input.size(120);
+  
 
   textFont(customFont);
 
   // playMode = 'restart';
 
-
+  collectibleX = random(100, width-100);
+  collectibleY = random(950, 1200);
 
   // Top-left corner of the img is at (0, 0)
   // Width and height are the img's original width and height
@@ -283,9 +310,10 @@ function draw() {
   image(grass, 0, 0, 800, 800);
   time = millis();
   fill(255);
+  textAlign(LEFT,LEFT);
   textSize(12);
   textFont('Times')
-  text('cat friend by Henry Farr, beta v1.0. 2023', 600,795)
+  text('cat friend by Henry Farr, beta v1.1. 2023', 600,795)
   let cdVolumeRounded = round(cdVolume, 2);
   // text(cdVolume, 500,500,500)
 
@@ -367,7 +395,7 @@ image(construction, 522,317.5,210,65)
     }
     
     // display the current image in the center of the canvas
-    image(currentSpeech, 500, 435,140,50);
+    image(currentSpeech, 500, 435,168.75,62.5);
     
     // let randomSpeech = speechBubbles[Math.floor(Math.random() * speechBubbles.length)];
     
@@ -380,10 +408,11 @@ image(construction, 522,317.5,210,65)
     speechbubbleTimer++;
     
     // hide the rectangle after 5 seconds
-    if (speechbubbleTimer > 1 * 60) {
+    if (speechbubbleTimer > 3 * 60) {
       speechbubbleVisible = false;
       speechbubbleTimer = 0;
       currentSpeech = null;
+      catCooldown = false;
     }
 
   //vvv Stat Bar Limits
@@ -428,7 +457,7 @@ image(construction, 522,317.5,210,65)
     healthlvl = healthlvl - 0.125;
   }
   if (happylvl <= 325) {
-  healthlvl = healthlvl -0.025;
+    healthlvl = healthlvl -0.025;
   }
   //^^^
 
@@ -436,6 +465,19 @@ image(construction, 522,317.5,210,65)
   // rect(400,500,125,200);
   if (catAlive) {
   image(catneutral, catlocationX, catlocationY, catlocationWidth, catlocationHeight);
+
+    // check if it's been 5 seconds since the last image was shown
+    if (millis() - lastBlinkTime >= 5000) {
+      image(blink, catlocationX, catlocationY, catlocationWidth, catlocationHeight); // display the image
+      lastBlinkTime = millis(); // update the time of the last image shown
+    }
+  
+    // check if it's been less than 0.5 seconds since the image was shown
+    if (millis() - lastBlinkTime > blinkDuration) {
+      image(blink, catlocationX, catlocationY, catlocationWidth, catlocationHeight); // display the image
+      // do nothing, just wait until 0.5 seconds have passed
+    }
+
   }
   if (healthlvl <= 1) {
     catAlive = false;
@@ -695,11 +737,25 @@ image(construction, 522,317.5,210,65)
     image(grassLawn,0,850,800,400);
     fill(255);
     stroke(0);
-    rect(0, 1250, 800, 40);
+    // rect(0, 1250, 800, 40);
     // rect (700,1150,75,75);
     // rect (600,1150,75,75);
 
     // Draw the cat
+
+    image(yarn, collectibleX, collectibleY, collectibleSize, collectibleSize);
+
+    if (dist(x, y, collectibleX, collectibleY) < (diameter + collectibleSize) / 2) {
+      // Spawn a new collectible in a random location
+      collectibleX = random(75, 775);
+      collectibleY = random(850, 1200);
+      happylvl += 15;
+      let randomMeow = meows[Math.floor(Math.random() * meows.length)];
+    
+      // play the chosen sound
+      randomMeow.setVolume(0.25);
+      randomMeow.play();
+    }
 
     image(gameCat, x - diameter/2, y - diameter/2, diameter, diameter);
            stroke(0);
@@ -707,9 +763,13 @@ image(construction, 522,317.5,210,65)
            rect(x - diameter/2, y - diameter/2, diameter, diameter);
     // textSize(30);
 
-  fill(255);
+    // fill(255, 0, 0);
+    // ellipse(collectibleX, collectibleY, collectibleSize, collectibleSize);
+
+
+  fill("#FFFFFF50");
   stroke(0);
-  rect(600,1050,200,200)
+  // rect(600,1050,200,200)
   beginShape();
   vertex(675, 1225);
   vertex(725, 1225);
@@ -726,7 +786,9 @@ image(construction, 522,317.5,210,65)
   vertex(675, 1225);
   endShape(CLOSE);
 
-rect(675,1075,50,50)
+
+
+// rect(675,1075,50,50)
 
   fill(0);
   noStroke();
@@ -737,31 +799,32 @@ rect(675,1075,50,50)
   text("D", 750, 1150);
   
       textAlign(LEFT,LEFT);
-    fill(0);
-    text("WASD controls",12.5,1275)
+    // fill(0);
+    // text("WASD controls",12.5,1275)
     
     // Move the circle based on arrow key presses
     if (keyIsDown(65) && !isMoving) {
       x -= 40;
-      happylvl = happylvl+0.75;
+      // happylvl = happylvl+0.5;
       isMoving = true;
     }
     if (keyIsDown(68) && !isMoving) {
       x += 40;
-      happylvl = happylvl+0.75;
+      // happylvl = happylvl+0.5;
       isMoving = true;
     }
     if (keyIsDown(87) && !isMoving) {
       y -= 40;
-      happylvl = happylvl+0.75;
+      // happylvl = happylvl+0.5;
       isMoving = true;
     }
     if (keyIsDown(83) && !isMoving) {
       y += 40;
-      happylvl = happylvl+0.75;
+      // happylvl = happylvl+0.5;
       isMoving = true;
     }
 
+     // Check if the cat has collected the collectible
 
     // Keep the circle inside the rectangle
     if (x < diameter/2) {
@@ -776,6 +839,10 @@ rect(675,1075,50,50)
     if (y > 1250 - diameter/2) {
       y = 1250 - diameter/2;
     }
+
+    noStroke();
+fill("blue");
+rect(0, 1250, 800, 50);
   }
    else {
     moveUpClickable = false;
@@ -791,7 +858,7 @@ rect(675,1075,50,50)
 // image(hat4,364,465,100,75);
 
 if (endScreen) {
-  reloadButton = true;
+  // reloadButton = true;
   nature.stop();
   fill("blue");
   noStroke();
@@ -817,12 +884,13 @@ function mousePressed() {
 
 //cat sounds
 if (mouseX >= catlocationX && mouseX <= catlocationX + catlocationWidth &&
-  mouseY >= catlocationY && mouseY <= catlocationY + catlocationHeight &&catClickable) {
+  mouseY >= catlocationY && mouseY <= catlocationY + catlocationHeight &&catClickable && !catCooldown) {
+    catCooldown = !catCooldown;
  // choose a random sound from our array
  let randomMeow = meows[Math.floor(Math.random() * meows.length)];
     
  // play the chosen sound
- randomMeow.setVolume(0.25);
+ randomMeow.setVolume(0.2);
  randomMeow.play();
 
  speechbubbleVisible = true;
@@ -962,6 +1030,7 @@ if (mouseX >= catlocationX && mouseX <= catlocationX + catlocationWidth &&
   //buy cd1//
     if (mouseX > 240 && mouseX < 370 && mouseY > 985 && mouseY < 1125 && monies >= 10 && cd1Clickable) {
     monies -= 10;
+    happylvl += 15;
     // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -995,6 +1064,7 @@ if (mouseX >= catlocationX && mouseX <= catlocationX + catlocationWidth &&
 //buy cd2//
 if (mouseX > 420 && mouseX < 550 && mouseY > 985 && mouseY < 1125 && monies >= 10 && cd2Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
   cd0mp3.stop();
   // cd1mp3.stop();
@@ -1027,6 +1097,7 @@ if (mouseX > 420 && mouseX < 550 && mouseY > 985 && mouseY < 1125 && monies >= 1
 //buy cd3//
 if (mouseX > 600 && mouseX < 730 && mouseY > 985 && mouseY < 1125 && monies >= 10 && cd3Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1060,6 +1131,7 @@ if (mouseX > 600 && mouseX < 730 && mouseY > 985 && mouseY < 1125 && monies >= 1
 //buy cd4//
 if (mouseX > 60 && mouseX < 190 && mouseY > 1170 && mouseY < 1310 && monies >= 10 && cd4Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1092,6 +1164,7 @@ if (mouseX > 60 && mouseX < 190 && mouseY > 1170 && mouseY < 1310 && monies >= 1
 //buy cd5//
 if (mouseX > 240 && mouseX < 370 && mouseY > 1170 && mouseY < 1310 && monies >= 10 && cd5Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1123,6 +1196,7 @@ if (mouseX > 240 && mouseX < 370 && mouseY > 1170 && mouseY < 1310 && monies >= 
 //buy cd6//
 if (mouseX > 420 && mouseX < 550 && mouseY > 1170 && mouseY < 1310 && monies >= 10 && cd6Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1155,6 +1229,7 @@ if (mouseX > 420 && mouseX < 550 && mouseY > 1170 && mouseY < 1310 && monies >= 
 //buy cd7//
 if (mouseX > 600 && mouseX < 730 && mouseY > 1170 && mouseY < 1310 && monies >= 10 && cd7Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1187,6 +1262,7 @@ if (mouseX > 600 && mouseX < 730 && mouseY > 1170 && mouseY < 1310 && monies >= 
 //buy cd8//
 if (mouseX > 60 && mouseX < 190 && mouseY > 1355 && mouseY < 1495 && monies >= 10 && cd8Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1219,6 +1295,7 @@ if (mouseX > 60 && mouseX < 190 && mouseY > 1355 && mouseY < 1495 && monies >= 1
 //buy cd9//
 if (mouseX > 240 && mouseX < 370 && mouseY > 1355 && mouseY < 1495 && monies >= 10 && cd9Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1251,6 +1328,7 @@ if (mouseX > 240 && mouseX < 370 && mouseY > 1355 && mouseY < 1495 && monies >= 
 //buy cd10//
 if (mouseX > 420 && mouseX < 550 && mouseY > 1355 && mouseY < 1495 && monies >= 10 && cd10Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1283,6 +1361,7 @@ if (mouseX > 420 && mouseX < 550 && mouseY > 1355 && mouseY < 1495 && monies >= 
 //buy cd11//
 if (mouseX > 600 && mouseX < 730 && mouseY > 1355 && mouseY < 1495 && monies >= 10 && cd11Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1315,6 +1394,7 @@ if (mouseX > 600 && mouseX < 730 && mouseY > 1355 && mouseY < 1495 && monies >= 
 //buy cd12//
 if (mouseX > 60 && mouseX < 190 && mouseY > 1540 && mouseY < 1680 && monies >= 10 && cd12Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1347,6 +1427,7 @@ if (mouseX > 60 && mouseX < 190 && mouseY > 1540 && mouseY < 1680 && monies >= 1
 //buy cd13//
 if (mouseX > 240 && mouseX < 370 && mouseY > 1540 && mouseY < 1680 && monies >= 10 && cd13Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1379,6 +1460,7 @@ if (mouseX > 240 && mouseX < 370 && mouseY > 1540 && mouseY < 1680 && monies >= 
 //buy cd14//
 if (mouseX > 420 && mouseX < 550 && mouseY > 1540 && mouseY < 1680 && monies >= 10 && cd14Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1411,6 +1493,7 @@ if (mouseX > 420 && mouseX < 550 && mouseY > 1540 && mouseY < 1680 && monies >= 
 //buy cd15//
 if (mouseX > 600 && mouseX < 730 && mouseY > 1540 && mouseY < 1680 && monies >= 10 && cd15Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1443,6 +1526,7 @@ if (mouseX > 600 && mouseX < 730 && mouseY > 1540 && mouseY < 1680 && monies >= 
 //buy cd16//
 if (mouseX > 60 && mouseX < 190 && mouseY > 1725 && mouseY < 1865 && monies >= 10 && cd16Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1475,6 +1559,7 @@ if (mouseX > 60 && mouseX < 190 && mouseY > 1725 && mouseY < 1865 && monies >= 1
 //buy cd17//
 if (mouseX > 240 && mouseX < 370 && mouseY > 1725 && mouseY < 1865 && monies >= 10 && cd17Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1507,6 +1592,7 @@ if (mouseX > 240 && mouseX < 370 && mouseY > 1725 && mouseY < 1865 && monies >= 
 //buy cd18//
 if (mouseX > 420 && mouseX < 550 && mouseY > 1725 && mouseY < 1865 && monies >= 10 && cd18Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1539,6 +1625,7 @@ if (mouseX > 420 && mouseX < 550 && mouseY > 1725 && mouseY < 1865 && monies >= 
 //buy cd19//
 if (mouseX > 600 && mouseX < 730 && mouseY > 1725 && mouseY < 1865 && monies >= 10 && cd19Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1571,6 +1658,7 @@ if (mouseX > 600 && mouseX < 730 && mouseY > 1725 && mouseY < 1865 && monies >= 
 //buy cd20//
 if (mouseX > 60 && mouseX < 190 && mouseY > 1910 && mouseY < 2050 && monies >= 10 && cd20Clickable) {
   monies -= 10;
+  happylvl += 15;
   // nature.pause();
     cd0mp3.stop();
     cd1mp3.stop();
@@ -1637,16 +1725,31 @@ if (mouseX > 60 && mouseX < 190 && mouseY > 1910 && mouseY < 2050 && monies >= 1
 
     //play
      // Move the cat based on mouse presses
+     //up
     if (mouseX > 675 && mouseX < 725 && mouseY > 1075 && mouseY < 1125 && moveUpClickable) {
       y -= 40;
-      happylvl = happylvl+0.75;
+      // happylvl = happylvl+0.5;
       isMoving = true;
     }
+    //left
     if (mouseX > 625 && mouseX < 675 && mouseY > 1125 && mouseY < 1175 && moveLeftClickable) {
       x -= 40;
-      happylvl = happylvl+0.75;
+      // happylvl = happylvl+0.5;
       isMoving = true;
     }
+    //right
+    if (mouseX > 725 && mouseX < 775 && mouseY > 1125 && mouseY < 1175 && moveRightClickable) {
+      x += 40;
+      // happylvl = happylvl+0.5;
+      isMoving = true;
+    }
+    //down
+    if (mouseX > 675 && mouseX < 725 && mouseY > 1175 && mouseY < 1225 && moveDownClickable) {
+      y += 40;
+      // happylvl = happylvl+0.5;
+      isMoving = true;
+    }
+
     // if (keyIsDown(87) && !isMoving) {
     //   y -= 40;
     //   happylvl = happylvl+0.75;
