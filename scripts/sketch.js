@@ -283,7 +283,7 @@ function setup() {
 
 mousepresssfx.setVolume(0.55);
 nature.setVolume(0.30);
-  frameRate(50);
+  frameRate(60);
   createCanvas(800, 2250);
   background("blue");
 
@@ -858,7 +858,7 @@ rect(0, 1250, 800, 50);
 // image(hat4,364,465,100,75);
 
 if (endScreen) {
-  // reloadButton = true;
+  reloadButton = true;
   nature.stop();
   fill("blue");
   noStroke();
